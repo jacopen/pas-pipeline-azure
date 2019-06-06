@@ -383,7 +383,12 @@ jobs:
     passed: [create-vars]
     trigger: true
   - get: env
-  - task: configure
+  - get: platform-automation-image
+    params:
+      globs:
+      - platform-automation-image-*.tgz
+      unpack: true
+  - task: generate-certificate
     image: platform-automation-image
     config:
       platform: linux
@@ -392,6 +397,8 @@ jobs:
       - name: env
       outputs:
       - name: cert-json
+      params:
+        ENV_FILE: env.yml
       run:
         path: bash
         args:
@@ -400,31 +407,41 @@ jobs:
           set -eux
           SYS_DOMAIN=$(cat vars/vars.yml | grep sys_domain -A 3 | grep value | awk '{print $2}')
           APPS_DOMAIN=$(cat vars/vars.yml | grep apps_domain -A 3 | grep value | awk '{print $2}')
-          om --env env/"${ENV_FILE}" generate-certificate --domain "*.$SYS_DOMAIN,*.$APPS_DOMAIN" > cert-json/cert.json
-  - task: configure
-    image: platform-automation-image
+          om --env env/"${ENV_FILE}" generate-certificate --domains "*.$SYS_DOMAIN,*.$APPS_DOMAIN" > cert-json/cert.json
+  - task: parse-certificate
     config:
       platform: linux
+      image_resource:
+        type: docker-image
+        source:
+          repository: jacopen/yj
       inputs:
       - name: vars
       - name: env
       - name: cert-json
       outputs:
-      - name: certs
+      - name: outputs
       run:
-        path: bash
+        path: sh
         args:
         - "-c"
         - |
           set -eux
-          cat cert-json/cert.json | jq -r .certificate > certs/server.crt
-          cat cert-json/cert.json | jq -r .key > certs/server.key
+          cat cert-json/cert.json | jq -r .certificate > outputs/server.crt
+          cat cert-json/cert.json | jq -r .key > outputs/server.key
+          KEY=$(cat outputs/server.key)
+          CERT=$(cat outputs/server.crt)
+          cat vars/vars.yml | yj -yj | jq ". |= .+ {\"cert_pem\": \"$CERT\"}" | jq ". |= .+ {\"private_key_pem\": \"$KEY\"}" | yj -jy > outputs/vars.yml
   - put: cert
     params:
-      file: certs/server.crt 
+      file: outputs/server.crt 
   - put: key
     params:
-      file: certs/server.key
+      file: outputs/server.key
+  - put: vars
+    params:
+      file: outputs/vars.yml
+
 
 - name: configure-director
   plan:

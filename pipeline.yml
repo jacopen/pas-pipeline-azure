@@ -17,6 +17,11 @@ resources:
   source:
     uri: https://github.com/pivotal-cf/terraforming-azure.git
     tag_filter: v0.40.0
+- name: pas-pipeline-azure
+  type: git
+  source:
+    uri: git@github.com:jacopen/pas-pipeline-azure.git
+    branch: platform-automation
 - name: terraform-state
   type: azure-blobstore
   source:
@@ -57,13 +62,6 @@ resources:
     storage_account_key: ((terraform_azure_storage_access_key))
     container: configs
     versioned_file: auth.yml
-- name: director 
-  type: azure-blobstore
-  source:
-    storage_account_name: ((terraform_azure_storage_account_name))
-    storage_account_key: ((terraform_azure_storage_access_key))
-    container: configs
-    versioned_file: director.yml
 - name: env 
   type: azure-blobstore
   source:
@@ -381,7 +379,7 @@ jobs:
     - get: terraform-state
       passed:
       - configure-authentication
-    - get: director
+    - get: pas-pipeline-azure
     - get: env
     - get: vars
   - task: configure
@@ -389,8 +387,9 @@ jobs:
     file: platform-automation-tasks/tasks/configure-director.yml
     params:
       VARS_FILES: vars.yml
+      DIRECTOR_CONFIG_FILE: templates/director.yml
     input_mapping:
-      config: director
+      config: pas-pipeline-azure
       env: env
       vars: vars
 

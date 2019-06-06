@@ -29,7 +29,7 @@ networks-configuration:
       cidr: ((management_subnet_cidrs.value))
       dns: 168.63.129.16
       gateway: ((management_subnet_gateway.value))
-      reserved_ip_ranges: ((management_subnet_reserved_ip_ranges.value)) #
+      reserved_ip_ranges: ((management_subnet_reserved_ip_ranges)) #
       availability_zone_names:
       - zone-1
       - zone-2
@@ -40,7 +40,7 @@ networks-configuration:
       cidr: ((pas_subnet_cidrs.value))
       dns: 168.63.129.16
       gateway: ((pas_subnet_gateway.value))
-      reserved_ip_ranges: ((pas_subnet_reserved_ip_ranges.value))
+      reserved_ip_ranges: ((pas_subnet_reserved_ip_ranges))
       availability_zone_names:
       - zone-1
       - zone-2
@@ -51,7 +51,7 @@ networks-configuration:
       cidr: ((services_subnet_cidrs.value))
       dns: 168.63.129.16
       gateway: ((services_subnet_gateway.value))
-      reserved_ip_ranges: ((services_subnet_reserved_ip_ranges.value))
+      reserved_ip_ranges: ((services_subnet_reserved_ip_ranges))
       availability_zone_names:
       - zone-1
       - zone-2

@@ -26,7 +26,7 @@ networks-configuration:
   - name: management
     subnets:
     - iaas_identifier: ((network_name.value))/((management_subnet_name.value))
-      cidr: ((management_subnet_cidrs.value))
+      cidr: ((management_subnet_cidrs.value[0]))
       dns: 168.63.129.16
       gateway: ((management_subnet_gateway.value))
       reserved_ip_ranges: ((management_subnet_reserved_ip_ranges)) #
@@ -37,7 +37,7 @@ networks-configuration:
   - name: deployment
     subnets:
     - iaas_identifier: ((network_name.value))/((pas_subnet_name.value))
-      cidr: ((pas_subnet_cidrs.value))
+      cidr: ((pas_subnet_cidrs.value[0]))
       dns: 168.63.129.16
       gateway: ((pas_subnet_gateway.value))
       reserved_ip_ranges: ((pas_subnet_reserved_ip_ranges))
@@ -48,7 +48,7 @@ networks-configuration:
   - name: services
     subnets:
     - iaas_identifier: ((network_name.value))/((services_subnet_name.value))
-      cidr: ((services_subnet_cidrs.value))
+      cidr: ((services_subnet_cidrs.value[0]))
       dns: 168.63.129.16
       gateway: ((services_subnet_gateway.value))
       reserved_ip_ranges: ((services_subnet_reserved_ip_ranges))

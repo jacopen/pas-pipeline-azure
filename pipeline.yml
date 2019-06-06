@@ -20,7 +20,7 @@ resources:
 - name: pas-pipeline-azure
   type: git
   source:
-    uri: git@github.com:jacopen/pas-pipeline-azure.git
+    uri: https://github.com/jacopen/pas-pipeline-azure.git
     branch: platform-automation
 - name: terraform-state
   type: azure-blobstore
@@ -85,6 +85,20 @@ resources:
     storage_account_key: ((terraform_azure_storage_access_key))
     container: configs
     versioned_file: vars.yml
+- name: cert
+  type: azure-blobstore
+  source:
+    storage_account_name: ((terraform_azure_storage_account_name))
+    storage_account_key: ((terraform_azure_storage_access_key))
+    container: configs
+    versioned_file: server.crt
+- name: key
+  type: azure-blobstore
+  source:
+    storage_account_name: ((terraform_azure_storage_account_name))
+    storage_account_key: ((terraform_azure_storage_access_key))
+    container: configs
+    versioned_file: server.key
 jobs:
 - name: bootstrap-terraform-state
   build_logs_to_retain: 5
@@ -204,7 +218,7 @@ jobs:
           set -e
           cd terraform-state
           terraform output --json > ../vars-json/vars.json
-          echo management_subnet_reserved_ip_ranges: $(terraform output management_subnet_cidrs | sed 's|0/.*$|2|g')-$(terraform output management_subnet_cidrs | sed 's|0/.*$|9|g') >> ../vars-json/ranges.yml
+          echo infrastructure_subnet_reserved_ip_ranges: $(terraform output infrastructure_subnet_cidrs | sed 's|0/.*$|2|g')-$(terraform output infrastructure_subnet_cidrs | sed 's|0/.*$|9|g') >> ../vars-json/ranges.yml
           echo pas_subnet_reserved_ip_ranges: $(terraform output pas_subnet_cidrs | sed 's|0/.*$|2|g')-$(terraform output pas_subnet_cidrs | sed 's|0/.*$|9|g') >> ../vars-json/ranges.yml
           echo services_subnet_reserved_ip_ranges: $(terraform output services_subnet_cidrs | sed 's|0/.*$|2|g')-$(terraform output services_subnet_cidrs | sed 's|0/.*$|9|g') >> ../vars-json/ranges.yml
   - task: convert-json2yaml
@@ -363,6 +377,55 @@ jobs:
 #             --request PUT \
 #             --path /api/v0/vm_types \
 #             --data "$(cat vm_types_new.json)"
+- name: create-self-signed-certificate
+  plan:
+  - get: vars
+    passed: [create-vars]
+    trigger: true
+  - get: env
+  - task: configure
+    image: platform-automation-image
+    config:
+      platform: linux
+      inputs:
+      - name: vars
+      - name: env
+      outputs:
+      - name: cert-json
+      run:
+        path: bash
+        args:
+        - "-c"
+        - |
+          set -eux
+          SYS_DOMAIN=$(cat vars/vars.yml | grep sys_domain -A 3 | grep value | awk '{print $2}')
+          APPS_DOMAIN=$(cat vars/vars.yml | grep apps_domain -A 3 | grep value | awk '{print $2}')
+          om --env env/"${ENV_FILE}" generate-certificate --domain "*.$SYS_DOMAIN,*.$APPS_DOMAIN" > cert-json/cert.json
+  - task: configure
+    image: platform-automation-image
+    config:
+      platform: linux
+      inputs:
+      - name: vars
+      - name: env
+      - name: cert-json
+      outputs:
+      - name: certs
+      run:
+        path: bash
+        args:
+        - "-c"
+        - |
+          set -eux
+          cat cert-json/cert.json | jq -r .certificate > certs/server.crt
+          cat cert-json/cert.json | jq -r .key > certs/server.key
+  - put: cert
+    params:
+      file: certs/server.crt 
+  - put: key
+    params:
+      file: certs/server.key
+
 - name: configure-director
   plan:
   - aggregate:
@@ -386,7 +449,7 @@ jobs:
     image: platform-automation-image
     file: platform-automation-tasks/tasks/configure-director.yml
     params:
-      VARS_FILES: vars.yml
+      VARS_FILES: vars/vars.yml
       DIRECTOR_CONFIG_FILE: templates/director.yml
     input_mapping:
       config: pas-pipeline-azure

@@ -1,0 +1,81 @@
+iaas-configurations:
+- additional_cloud_properties: {}
+  availability_mode: availability_zones
+  bosh_storage_account_name: ((bosh_root_storage_account.value))
+  client_id: ((client_id.value))
+  client_secret: ((cleint_secret.value))
+  cloud_storage_type: managed_disks
+  default_security_group: ((bosh_deployed_vms_security_group_name.value))
+  environment: AzureCloud
+  name: default
+  resource_group_name: ((pcf_resource_group_name.value))
+  ssh_private_key: ((ops_manager_ssh_private_key.value))
+  ssh_public_key: ((ops_manager_ssh_public_key.value))
+  storage_account_type: Premium_LRS
+  subscription_id: ((subscription_id.value))
+  tenant_id: ((tenant_id.value))
+network-assignment:
+  network:
+    name: management
+  other_availability_zones: []
+  singleton_availability_zone:
+    name: zone-1
+networks-configuration:
+  icmp_checks_enabled: false
+  networks:
+  - name: management
+    subnets:
+    - iaas_identifier: ((network_name.value))/((management_subnet_name.value))
+      cidr: ((management_subnet_cidrs.value))
+      dns: 168.63.129.16
+      gateway: ((management_subnet_gateway.value))
+      reserved_ip_ranges: ((management_subnet_reserved_ip_ranges.value)) #
+      availability_zone_names:
+      - zone-1
+      - zone-2
+      - zone-3
+  - name: deployment
+    subnets:
+    - iaas_identifier: ((network_name.value))/((pas_subnet_name.value))
+      cidr: ((pas_subnet_cidrs.value))
+      dns: 168.63.129.16
+      gateway: ((pas_subnet_gateway.value))
+      reserved_ip_ranges: ((pas_subnet_reserved_ip_ranges.value))
+      availability_zone_names:
+      - zone-1
+      - zone-2
+      - zone-3
+  - name: services
+    subnets:
+    - iaas_identifier: ((network_name.value))/((services_subnet_name.value))
+      cidr: ((services_subnet_cidrs.value))
+      dns: 168.63.129.16
+      gateway: ((services_subnet_gateway.value))
+      reserved_ip_ranges: ((services_subnet_reserved_ip_ranges.value))
+      availability_zone_names:
+      - zone-1
+      - zone-2
+      - zone-3
+properties-configuration:
+  director_configuration:
+    blobstore_type: local
+    database_type: internal
+    director_worker_count: 5
+    local_blobstore_options:
+      tls_enabled: true
+    ntp_servers_string: 0.pool.ntp.org
+    post_deploy_enabled: false
+    resurrector_enabled: false
+resource-configuration:
+  compilation:
+    instances: automatic
+    instance_type:
+      id: automatic
+    internet_connected: false
+  director:
+    instances: automatic
+    persistent_disk:
+      size_mb: automatic
+    instance_type:
+      id: automatic
+    internet_connected: false

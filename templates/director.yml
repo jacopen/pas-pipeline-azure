@@ -3,7 +3,7 @@ iaas-configurations:
   availability_mode: availability_zones
   bosh_storage_account_name: ((bosh_root_storage_account.value))
   client_id: ((client_id.value))
-  client_secret: ((cleint_secret.value))
+  client_secret: ((client_secret.value))
   cloud_storage_type: managed_disks
   default_security_group: ((bosh_deployed_vms_security_group_name.value))
   environment: AzureCloud

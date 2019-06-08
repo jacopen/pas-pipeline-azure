@@ -527,12 +527,21 @@ jobs:
         - platform-automation-image-*.tgz
         unpack: true
     - get: pas
+      params:
+        globs: ["cf-*.pivotal"]
     - get: env
     - get: terraform-state
       passed: ["configure-director"]
+      trigger: true
   - task: upload
     image: platform-automation-image
     file: platform-automation-tasks/tasks/upload-product.yml
+    input_mapping:
+      product: pas
+      env: env
+  - task: stage
+    image: platform-automation-image
+    file: platform-automation-tasks/tasks/stage-product.yml
     input_mapping:
       product: pas
       env: env
@@ -551,18 +560,24 @@ jobs:
         - platform-automation-image-*.tgz
         unpack: true
     - get: pas
+      params:
+        globs: ["cf-*.pivotal"]
     - get: env
     - get: pasconfig
+    - get: vars
     - get: terraform-state
       passed: ["upload-pas"]
+      trigger: true
   - task: configure
     image: platform-automation-image
     file: platform-automation-tasks/tasks/configure-product.yml
     params:
       CONFIG_FILE: pas.yml
+      VARS_FILE: vars/vars.yml
     input_mapping:
       config: pasconfig
       env: env
+      vars: vars
 #- name: config-pas
 #  build_logs_to_retain: 5
 #  plan:

@@ -97,6 +97,8 @@ resource-config:
     instance_type:
       id: automatic
     internet_connected: false
+    elb_names:
+    - ((ssh_lb_name))
   diego_cell:
     instances: 2
     instance_type:
@@ -149,6 +151,8 @@ resource-config:
     instance_type:
       id: automatic
     internet_connected: false
+    elb_names:
+    - ((mysql_lb_name))
   nats:
     instances: 1
     instance_type:
@@ -171,6 +175,8 @@ resource-config:
     instance_type:
       id: automatic
     internet_connected: false
+    elb_names:
+    - ((web_lb_name))
   syslog_adapter:
     instances: 1
     instance_type:

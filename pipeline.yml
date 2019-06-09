@@ -70,14 +70,6 @@ resources:
     container: configs
     versioned_file: env.yml
 
-- name: pasconfig
-  type: azure-blobstore
-  source:
-    storage_account_name: ((terraform_azure_storage_account_name))
-    storage_account_key: ((terraform_azure_storage_access_key))
-    container: configs
-    versioned_file: pas.yml
-
 - name: vars
   type: azure-blobstore
   source:
@@ -563,7 +555,7 @@ jobs:
       params:
         globs: ["cf-*.pivotal"]
     - get: env
-    - get: pasconfig
+    - get: pas-pipeline-azure
     - get: vars
     - get: terraform-state
       passed: ["upload-pas"]
@@ -572,10 +564,10 @@ jobs:
     image: platform-automation-image
     file: platform-automation-tasks/tasks/configure-product.yml
     params:
-      CONFIG_FILE: pas.yml
-      VARS_FILE: vars/vars.yml
+      CONFIG_FILE: templates/pas.yml
+      VARS_FILES: vars/vars.yml
     input_mapping:
-      config: pasconfig
+      config: pas-pipeline-azure
       env: env
       vars: vars
 #- name: config-pas

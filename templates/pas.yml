@@ -152,7 +152,7 @@ resource-config:
       id: automatic
     internet_connected: false
     elb_names:
-    - ((mysql_lb_name))
+    - ((mysql_lb_name.value))
   nats:
     instances: 1
     instance_type:
@@ -176,7 +176,7 @@ resource-config:
       id: automatic
     internet_connected: false
     elb_names:
-    - ((web_lb_name))
+    - ((web_lb_name.value))
   syslog_adapter:
     instances: 1
     instance_type:

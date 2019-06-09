@@ -6,7 +6,7 @@ product-properties:
 #    value:
 #      secret: ((cloud_controller_encrypt_key.secret))
   .cloud_controller.system_domain:
-    value: ((system_domain.value))
+    value: ((sys_domain.value))
   .ha_proxy.skip_cert_verify:
     value: true
   .mysql_monitor.recipient_email:

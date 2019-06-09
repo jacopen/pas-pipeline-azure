@@ -98,7 +98,7 @@ resource-config:
       id: automatic
     internet_connected: false
     elb_names:
-    - ((diego_ssh_lb_name))
+    - ((diego_ssh_lb_name.value))
   diego_cell:
     instances: 2
     instance_type:
